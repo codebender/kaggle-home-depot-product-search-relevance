@@ -113,9 +113,9 @@ X_test = df_test.drop(['id','relevance'],axis=1).values
 print("--- Features Set: %s minutes ---" % ((time.time() - start_time)/60))
 rfr = RandomForestRegressor()
 clf = pipeline.Pipeline([('rfr', rfr)])
-param_grid = {'rfr__n_estimators' : [109],#list(range(109,110,1)),
-              'rfr__max_depth': [9], #list(range(7,8,1))
-              #'rfr__max_features' : [.6,.8],
+param_grid = {'rfr__n_estimators' : list(range(108,112,1)),
+              'rfr__max_depth': list(range(7,10,1)),
+              'rfr__max_features' : [.6, .7,.8]
             }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid, n_jobs = -1, cv = 10, verbose = 150, scoring=RSME)
 model.fit(X_train, y_train)
@@ -127,5 +127,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_mean_squared_2.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_mean_squared_tuned.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
