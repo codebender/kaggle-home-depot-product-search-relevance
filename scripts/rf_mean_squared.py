@@ -17,27 +17,14 @@ random.seed(1337)
 
 df_train = pd.read_csv('../input/train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('../input/test.csv', encoding="ISO-8859-1")
-#df_attr = pd.read_csv('../input/attributes.csv')
-#df_attr = df_attr.dropna()
-#df_attr = df_attr.reset_index(drop=True)
-#d = {}
-#for i in range(len(df_attr)):
-#    #print(df_attr[i:i+1])
-#    if str(int(df_attr.product_uid[i])) in d:
-#        d[str(int(df_attr.product_uid[i]))][1] += " " + str(df_attr['value'][i]).replace('\t'," ")
-#    else:
-#        d[str(int(df_attr.product_uid[i]))] = [int(df_attr.product_uid[i]),str(df_attr['value'][i])]
-#df_attr = pd.DataFrame.from_dict(d,orient='index')
-#df_attr.columns = ['product_uid','value']
-#print(df_attr.head())
 df_pro_desc = pd.read_csv('../input/product_descriptions.csv')
 num_train = df_train.shape[0]
 
 def fmean_squared_error(ground_truth, predictions):
-    fmean_squared_error_ = mean_squared_error(ground_truth, predictions)**0.5
+    fmean_squared_error_ = mean_squared_error(ground_truth, predictions)**0.25
     return fmean_squared_error_
 
-RSME  = make_scorer(fmean_squared_error, greater_is_better=False)
+RMSE  = make_scorer(fmean_squared_error, greater_is_better=False)
 
 def str_stem(str1):
     str1 = str1.lower()
@@ -101,7 +88,7 @@ df_all['word_in_description'] = df_all['product_info'].map(lambda x:str_common_w
 df_all['ratio_title'] = df_all['word_in_title']/df_all['len_of_query']
 df_all['ratio_description'] = df_all['word_in_description']/df_all['len_of_query']
 
-df_all.to_csv("df_all2.csv")  #no need to keep reprocessing for further grid searches
+#df_all.to_csv("df_all2.csv")  #no need to keep reprocessing for further grid searches
 df_all = df_all.drop(['search_term','product_title','product_description','product_info'],axis=1)
 df_all.head()
 df_train = df_all.iloc[:num_train]
@@ -113,11 +100,12 @@ X_test = df_test.drop(['id','relevance'],axis=1).values
 print("--- Features Set: %s minutes ---" % ((time.time() - start_time)/60))
 rfr = RandomForestRegressor()
 clf = pipeline.Pipeline([('rfr', rfr)])
-param_grid = {'rfr__n_estimators' : list(range(106,110,1)),
-              'rfr__max_depth': list(range(7,9,1)),
-              'rfr__max_features' : [.5,.6,.7]
+param_grid = {'rfr__n_estimators' : [135, 140, 145, 150],
+              'rfr__max_depth': list(range(7,10,1)),
+              'rfr__max_features' : [.5,.6,.7,.8]
             }
-model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid, n_jobs = -1, cv = 10, verbose = 150, scoring=RSME)
+model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
+    n_jobs = -1, cv = 10, verbose = 150, scoring=RMSE)
 model.fit(X_train, y_train)
 
 print("Best parameters found by grid search:")
@@ -127,5 +115,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_mean_squared_tuned_2.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
