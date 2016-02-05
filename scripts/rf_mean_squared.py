@@ -113,7 +113,7 @@ rfr = RandomForestRegressor()
 clf = pipeline.Pipeline([('rfr', rfr)])
 param_grid = {'rfr__n_estimators' : [110,115,120,125],
               'rfr__max_depth': list(range(8,11)),
-              'rfr__max_features' : [.5,.6]
+              'rfr__max_features' : [.4,.45,.5]
             }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid, n_jobs = -1, cv = 10, verbose = 150, scoring=RMSE)
 model.fit(X_train, y_train)
@@ -125,5 +125,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_w_attrs_125.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_w_attrs_120.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
