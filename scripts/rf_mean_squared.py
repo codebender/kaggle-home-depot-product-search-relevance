@@ -10,6 +10,10 @@ from nltk.stem.porter import *
 stemmer = PorterStemmer()
 import re
 import random
+from nltk.corpus import stopwords
+import random
+import re, math
+from collections import Counter
 
 random.seed(1337)
 
@@ -81,6 +85,39 @@ def str_whole_word(str1, str2, i_):
             i_ += len(str1)
     return cnt
 
+cachedStopWords = stopwords.words("english")
+WORD = re.compile(r'\w+')
+
+
+def get_cosine(vec1, vec2):
+     intersection = set(vec1.keys()) & set(vec2.keys())
+     numerator = sum([vec1[x] * vec2[x] for x in intersection])
+
+     sum1 = sum([vec1[x]**2 for x in vec1.keys()])
+     sum2 = sum([vec2[x]**2 for x in vec2.keys()])
+     denominator = math.sqrt(sum1) * math.sqrt(sum2)
+
+     if not denominator:
+        return 0.0
+     else:
+        return float(numerator) / denominator
+
+def text_to_vector(text):
+     words = WORD.findall(text)
+     return Counter(words)
+
+#import enchant
+
+def calculate_similarity(str1,str2):
+    vector1 = text_to_vector(str1)
+    vector2 = text_to_vector(str2)
+    return get_cosine(vector1, vector2)
+
+def remove_stopwords(text):
+   # text = 'hello bye the the hi'
+    return ' '.join([word for word in text.split() if word not in cachedStopWords])
+
+
 def fmean_squared_error(ground_truth, predictions):
     fmean_squared_error_ = mean_squared_error(ground_truth, predictions)**0.1
     return fmean_squared_error_
@@ -109,6 +146,10 @@ df_all['ratio_description'] = df_all['word_in_description']/df_all['len_of_query
 df_all['attr'] = df_all['search_term']+"\t"+df_all['brand']
 df_all['word_in_brand'] = df_all['attr'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[1]))
 df_all['ratio_brand'] = df_all['word_in_brand']/df_all['len_of_brand']
+
+df_all['similarity_in_description']=df_all['product_info'].map(lambda x:calculate_similarity(x.split('\t')[0],x.split('\t')[2]))
+df_all['similarity_in_title']=df_all['product_info'].map(lambda x:calculate_similarity(x.split('\t')[0],x.split('\t')[1]))
+
 df_all = df_all.drop(['search_term','product_title','product_description','product_info','attr','brand'],axis=1)
 df_all.head()
 print (df_all[:10])
@@ -124,11 +165,12 @@ X_test = df_test.drop(['id','relevance'],axis=1).values
 RMSE  = make_scorer(fmean_squared_error, greater_is_better=False)
 rfr = RandomForestRegressor()
 clf = pipeline.Pipeline([('rfr', rfr)])
-param_grid = {'rfr__n_estimators' : [115,120,125,130,135],
-              'rfr__max_depth': list(range(8,11)),
+param_grid = {'rfr__n_estimators' : [120,125,130,135],
+              'rfr__max_depth': list(range(10,13)),
               'rfr__max_features' : [.4,.45,.5]
             }
-model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid, n_jobs = -1, cv = 10, verbose = 150, scoring=RMSE)
+model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
+    n_jobs = -1, cv = 10, verbose = 150, scoring=RMSE)
 model.fit(X_train, y_train)
 
 print("Best parameters found by grid search:")
@@ -138,5 +180,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_more_replacement.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_with_similarity_2.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
