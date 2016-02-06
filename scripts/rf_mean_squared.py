@@ -23,28 +23,40 @@ num_train = df_train.shape[0]
 
 def str_stem(s):
     if isinstance(s, str):
-        s = s.replace(" in.","in.")
-        s = s.replace(" inch","in.")
-        s = s.replace("inch","in.")
-        s = s.replace(" in ","in. ")
-        s = s.replace(" ft.","ft.")
-        s = s.replace(" feet","ft.")
-        s = s.replace(" in ","in. ")
-        s = s.replace(" ft ","ft. ")
-        s = s.replace(" ft.","ft.")
-        s = s.replace(" foot","ft.")
-        s = s.replace(" feet","ft.")
-        s = s.replace("foot","ft.")
-        s = s.replace("feet","ft.")
-        s = s.replace(" ft ","ft. ")
-        s = s.replace(" gallon ","gal. ")
-        s = s.replace("gallon","gal.")
-        s = s.replace(" oz.","oz.")
-        s = s.replace(" ounce","oz.")
-        s = s.replace("ounce","oz.")
-        s = s.replace(" oz ","oz. ")
-        s = s.replace(" cm.","cm.")
-        s = s.replace(" cm ","cm. ")
+        s = s.replace("'' ","in.") # character
+        s = s.replace("inches","in.") # whole word
+        s = s.replace("inch","in.") # whole word
+        s = s.replace(" in ","in. ") # no period
+        s = s.replace(" in.","in.") # prefix space
+
+        s = s.replace("' ","ft.") # character
+        s = s.replace(" feet ","ft. ") # whole word
+        s = s.replace(" foot ","ft. ") # whole word
+        s = s.replace("feet","ft.") # whole word
+        s = s.replace("foot","ft.") # whole word
+        s = s.replace(" ft ","ft. ") # no period
+        s = s.replace(" ft.","ft.") # prefix space
+
+        s = s.replace(" gallons ","gal. ") # whole word
+        s = s.replace(" gallon ","gal. ") # whole word
+        s = s.replace("gallon","gal.") # whole word
+        s = s.replace(" gal ","gal. ") # no period
+
+        s = s.replace(" ounces ","oz. ") # whole word
+        s = s.replace(" ounce ","oz. ") # whole word
+        s = s.replace("ounce","oz.") # whole word
+        s = s.replace(" oz ","oz. ") # no period
+        s = s.replace(" oz.","oz.") # prefix space
+
+
+        s = s.replace(" cm ","cm. ") # no period
+        s = s.replace(" cm. ","cm.") # prefix space
+
+        s = s.replace(" pounds ","lb. ") # character
+        s = s.replace(" pound ","lb. ") # whole word
+        s = s.replace("pound","lb.") # whole word
+        s = s.replace(" lb ","lb. ") # no period
+        s = s.replace(" lb.","lb.") # prefix space
         return " ".join([stemmer.stem(re.sub('[^A-Za-z0-9-./]', ' ', word)) for word in s.lower().split()])
     else:
         return "null"
@@ -74,6 +86,7 @@ def fmean_squared_error(ground_truth, predictions):
     return fmean_squared_error_
 
 RMSE  = make_scorer(fmean_squared_error, greater_is_better=False)
+
 df_all = pd.concat((df_train, df_test), axis=0, ignore_index=True)
 df_all = pd.merge(df_all, df_pro_desc, how='left', on='product_uid')
 df_all = pd.merge(df_all, df_brand, how='left', on='product_uid')
@@ -111,7 +124,7 @@ X_test = df_test.drop(['id','relevance'],axis=1).values
 RMSE  = make_scorer(fmean_squared_error, greater_is_better=False)
 rfr = RandomForestRegressor()
 clf = pipeline.Pipeline([('rfr', rfr)])
-param_grid = {'rfr__n_estimators' : [110,115,120,125],
+param_grid = {'rfr__n_estimators' : [115,120,125,130,135],
               'rfr__max_depth': list(range(8,11)),
               'rfr__max_features' : [.4,.45,.5]
             }
@@ -125,5 +138,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_w_attrs_120.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_more_replacement.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
