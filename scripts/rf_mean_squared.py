@@ -165,8 +165,8 @@ X_test = df_test.drop(['id','relevance'],axis=1).values
 RMSE  = make_scorer(fmean_squared_error, greater_is_better=False)
 rfr = RandomForestRegressor()
 clf = pipeline.Pipeline([('rfr', rfr)])
-param_grid = {'rfr__n_estimators' : [120,125,130,135],
-              'rfr__max_depth': list(range(10,13)),
+param_grid = {'rfr__n_estimators' : [120,125,130],
+              'rfr__max_depth': list(range(11,14)),
               'rfr__max_features' : [.4,.45,.5]
             }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
@@ -180,5 +180,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_with_similarity_2.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_with_similarity_3.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
