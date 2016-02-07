@@ -41,17 +41,11 @@ def str_stem(s):
         s = s.replace(" ft ","ft. ") # no period
         s = s.replace(" ft.","ft.") # prefix space
 
-        s = s.replace(" gallons ","gal. ") # whole word
-        s = s.replace(" gallon ","gal. ") # whole word
-        s = s.replace("gallon","gal.") # whole word
-        s = s.replace(" gal ","gal. ") # no period
-
         s = s.replace(" ounces ","oz. ") # whole word
         s = s.replace(" ounce ","oz. ") # whole word
         s = s.replace("ounce","oz.") # whole word
         s = s.replace(" oz ","oz. ") # no period
         s = s.replace(" oz.","oz.") # prefix space
-
 
         s = s.replace(" cm ","cm. ") # no period
         s = s.replace(" cm. ","cm.") # prefix space
@@ -59,8 +53,42 @@ def str_stem(s):
         s = s.replace(" pounds ","lb. ") # character
         s = s.replace(" pound ","lb. ") # whole word
         s = s.replace("pound","lb.") # whole word
+        s = s.replace("pounds","lb.") # whole word
         s = s.replace(" lb ","lb. ") # no period
-        s = s.replace(" lb.","lb.") # prefix space
+        s = s.replace(" lb.","lb.")
+        s = s.replace(" lbs ","lb. ")
+        s = s.replace(" lbs. ","lb. ")
+
+        s = s.replace("*"," xby ")
+        s = s.replace("*"," xby ")
+        s = s.replace(" by"," xby")
+        s = s.replace("x0"," xby 0")
+        s = s.replace("x1"," xby 1")
+        s = s.replace("x2"," xby 2")
+        s = s.replace("x3"," xby 3")
+        s = s.replace("x4"," xby 4")
+        s = s.replace("x5"," xby 5")
+        s = s.replace("x6"," xby 6")
+        s = s.replace("x7"," xby 7")
+        s = s.replace("x8"," xby 8")
+        s = s.replace("x9"," xby 9")
+
+        s = s.replace(" sq ft","sq.ft. ")
+        s = s.replace("sq ft","sq.ft. ")
+        s = s.replace("sqft","sq.ft. ")
+        s = s.replace(" sqft ","sq.ft. ")
+        s = s.replace("sq. ft","sq.ft. ")
+        s = s.replace("sq ft.","sq.ft. ")
+        s = s.replace("sq feet","sq.ft. ")
+        s = s.replace("square feet","sq.ft. ")
+
+        s = s.replace(" gallons "," gal. ") # character
+        s = s.replace(" gallon "," gal. ") # whole word
+        s = s.replace("gallons"," gal.") # character
+        s = s.replace("gallon"," gal.") # whole word
+        s = s.replace(" gal "," gal. ") # character
+        s = s.replace(" gal"," gal.") # whole word
+
         return " ".join([stemmer.stem(re.sub('[^A-Za-z0-9-./]', ' ', word)) for word in s.lower().split()])
     else:
         return "null"
@@ -180,5 +208,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_with_similarity_3.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_more_cleaning.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
