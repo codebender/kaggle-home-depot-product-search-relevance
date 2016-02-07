@@ -27,6 +27,7 @@ num_train = df_train.shape[0]
 
 def str_stem(s):
     if isinstance(s, str):
+        s = s.replace("-"," - ") # character
         s = s.replace("'' ","in.") # character
         s = s.replace("inches","in.") # whole word
         s = s.replace("inch","in.") # whole word
@@ -208,5 +209,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_more_cleaning.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_more_cleaning_2.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
