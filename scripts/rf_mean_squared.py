@@ -15,7 +15,7 @@ import random
 import re, math
 from collections import Counter
 
-random.seed(1337)
+random.seed(13371337)
 
 df_train = pd.read_csv('../input/train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('../input/test.csv', encoding="ISO-8859-1")
@@ -27,6 +27,7 @@ num_train = df_train.shape[0]
 
 def str_stem(s):
     if isinstance(s, str):
+        s = s.lower()
         s = s.replace("-"," - ") # character
         s = s.replace("'' ","in.") # character
         s = s.replace("inches","in.") # whole word
@@ -48,8 +49,15 @@ def str_stem(s):
         s = s.replace(" oz ","oz. ") # no period
         s = s.replace(" oz.","oz.") # prefix space
 
+        s = s.replace(" centimeters","cm.")
+        s = s.replace("cm ","cm. ") # no period
         s = s.replace(" cm ","cm. ") # no period
-        s = s.replace(" cm. ","cm.") # prefix space
+        s = s.replace(" cm.","cm.") # prefix space
+
+        s = s.replace(" millimeters","mm.")
+        s = s.replace("mm ","mm. ") # no period
+        s = s.replace(" mm ","mm. ") # no period
+        s = s.replace(" mm.","mm.") # prefix space
 
         s = s.replace(" pounds ","lb. ") # character
         s = s.replace(" pound ","lb. ") # whole word
@@ -59,8 +67,8 @@ def str_stem(s):
         s = s.replace(" lb.","lb.")
         s = s.replace(" lbs ","lb. ")
         s = s.replace(" lbs. ","lb. ")
+        s = s.replace("lbs.","lb.")
 
-        s = s.replace("*"," xby ")
         s = s.replace("*"," xby ")
         s = s.replace(" by"," xby")
         s = s.replace("x0"," xby 0")
@@ -90,12 +98,13 @@ def str_stem(s):
         s = s.replace(" gal "," gal. ") # character
         s = s.replace(" gal"," gal.") # whole word
 
-        return " ".join([stemmer.stem(re.sub('[^A-Za-z0-9-./]', ' ', word)) for word in s.lower().split()])
+        s = (" ").join([stemmer.stem(z) for z in s.split(" ")])
+
+        return s.lower()
     else:
         return "null"
 
 def str_common_word(str1, str2):
-    str1, str2 = str1.lower(), str2.lower()
     words, cnt = str1.split(), 0
     for word in words:
         if str2.find(word)>=0:
@@ -103,7 +112,6 @@ def str_common_word(str1, str2):
     return cnt
 
 def str_whole_word(str1, str2, i_):
-    str1, str2 = str1.lower().strip(), str2.lower().strip()
     cnt = 0
     while i_ < len(str2):
         i_ = str2.find(str1, i_)
@@ -191,12 +199,11 @@ y_train = df_train['relevance'].values
 X_train = df_train.drop(['id','relevance'],axis=1).values
 X_test = df_test.drop(['id','relevance'],axis=1).values
 
-RMSE  = make_scorer(fmean_squared_error, greater_is_better=False)
 rfr = RandomForestRegressor()
 clf = pipeline.Pipeline([('rfr', rfr)])
 param_grid = {'rfr__n_estimators' : [120,125,130],
               'rfr__max_depth': list(range(11,14)),
-              'rfr__max_features' : [.4,.45,.5]
+              'rfr__max_features' : [.35,.4,.45]
             }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
     n_jobs = -1, cv = 10, verbose = 150, scoring=RMSE)
@@ -209,5 +216,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_more_cleaning_2.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_more_cleaning_3.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
