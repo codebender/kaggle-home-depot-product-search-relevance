@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import pipeline, grid_search
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import FeatureUnion
 from sklearn.metrics import mean_squared_error, make_scorer
 from nltk.stem.porter import *
 stemmer = PorterStemmer()
@@ -15,7 +17,7 @@ import random
 import re, math
 from collections import Counter
 
-random.seed(13371337)
+random.seed(2016)
 
 df_train = pd.read_csv('../input/train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('../input/test.csv', encoding="ISO-8859-1")
@@ -66,10 +68,10 @@ def str_stem(s):
         s = s.replace("pound","lb.") # whole word
         s = s.replace("pounds","lb.") # whole word
         s = s.replace(" lb ","lb. ") # no period
-        s = s.replace(" lb.","lb.")
         s = s.replace(" lbs ","lb. ")
         s = s.replace(" lbs. ","lb. ")
         s = s.replace("lbs.","lb.")
+        s = s.replace(" lb.","lb.")
 
         s = s.replace("*"," xby ")
         s = s.replace(" by"," xby")
@@ -83,6 +85,16 @@ def str_stem(s):
         s = s.replace("x7"," xby 7")
         s = s.replace("x8"," xby 8")
         s = s.replace("x9"," xby 9")
+        s = s.replace("0x","0 xby ")
+        s = s.replace("1x","1 xby ")
+        s = s.replace("2x","2 xby ")
+        s = s.replace("3x","3 xby ")
+        s = s.replace("4x","4 xby ")
+        s = s.replace("5x","5 xby ")
+        s = s.replace("6x","6 xby ")
+        s = s.replace("7x","7 xby ")
+        s = s.replace("8x","8 xby ")
+        s = s.replace("9x","9 xby ")
 
         s = s.replace(" sq ft","sq.ft. ")
         s = s.replace("sq ft","sq.ft. ")
@@ -92,13 +104,45 @@ def str_stem(s):
         s = s.replace("sq ft.","sq.ft. ")
         s = s.replace("sq feet","sq.ft. ")
         s = s.replace("square feet","sq.ft. ")
+        s = s.replace(" sq.ft.","sq.ft.")
 
-        s = s.replace(" gallons "," gal. ") # character
-        s = s.replace(" gallon "," gal. ") # whole word
-        s = s.replace("gallons"," gal.") # character
-        s = s.replace("gallon"," gal.") # whole word
-        s = s.replace(" gal "," gal. ") # character
-        s = s.replace(" gal"," gal.") # whole word
+        s = s.replace(" gallons ","gal. ") # character
+        s = s.replace(" gallon ","gal. ") # whole word
+        s = s.replace("gallons","gal.") # character
+        s = s.replace("gallon","gal.") # whole word
+        s = s.replace(" gal ","gal. ") # character
+        s = s.replace(" gal","gal.") # whole word
+        s = s.replace(" gal.","gal.")
+
+        s = s.replace("°","deg.")
+        s = s.replace(" degrees ","deg. ")
+        s = s.replace("degrees","deg.")
+        s = s.replace(" degree ","deg. ")
+        s = s.replace(" degree","deg.")
+        s = s.replace(" .deg","deg.")
+
+        s = s.replace(" volts","volt.")
+        s = s.replace("volts","volt.")
+        s = s.replace(" volt","volt.")
+        s = s.replace("volt","volt.")
+        s = s.replace(" volt.","volt.")
+
+        s = s.replace(" watts ","watt. ")
+        s = s.replace(" watts","watt.")
+        s = s.replace(" watt ","watt. ")
+        s = s.replace("watt","watt.")
+        s = s.replace(" watt.","watt.")
+
+        s = s.replace(" ampère ","amp. ")
+        s = s.replace("ampère","amp ")
+        s = s.replace(" amps ","amp.")
+        s = s.replace("amps ","amp.")
+        s = s.replace(" amp ","amp.")
+        s = s.replace(" amp.","amp.")
+
+        s = s.replace("whirpool","whirlpool")
+        s = s.replace("whirlpoolga", "whirlpool")
+        s = s.replace("whirlpoolstainless","whirlpool stainless")
 
         s = (" ").join([stemmer.stem(z) for z in s.split(" ")])
 
@@ -185,6 +229,14 @@ df_all['ratio_description'] = df_all['word_in_description']/df_all['len_of_query
 df_all['attr'] = df_all['search_term']+"\t"+df_all['brand']
 df_all['word_in_brand'] = df_all['attr'].map(lambda x:str_common_word(x.split('\t')[0],x.split('\t')[1]))
 df_all['ratio_brand'] = df_all['word_in_brand']/df_all['len_of_brand']
+df_brand = pd.unique(df_all.brand.ravel())
+d={}
+i = 1
+for s in df_brand:
+    d[s]=i
+    i+=1
+df_all['brand_feature'] = df_all['brand'].map(lambda x:d[x])
+df_all['search_term_feature'] = df_all['search_term'].map(lambda x:len(x))
 
 df_all['similarity_in_description']=df_all['product_info'].map(lambda x:calculate_similarity(x.split('\t')[0],x.split('\t')[2]))
 df_all['similarity_in_title']=df_all['product_info'].map(lambda x:calculate_similarity(x.split('\t')[0],x.split('\t')[1]))
@@ -204,7 +256,7 @@ X_test = df_test.drop(['id','relevance'],axis=1).values
 rfr = RandomForestRegressor()
 clf = pipeline.Pipeline([('rfr', rfr)])
 param_grid = {'rfr__n_estimators' : [120,125,130],
-              'rfr__max_depth': list(range(11,14)),
+              'rfr__max_depth': list(range(14,17)),
               'rfr__max_features' : [.4,.45]
             }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
@@ -218,5 +270,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/rf_RMSE_more_cleaning_4.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/new_features_2.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
