@@ -153,7 +153,6 @@ def str_whole_word(str1, str2, i_):
 cachedStopWords = stopwords.words("english")
 WORD = re.compile(r'\w+')
 
-
 def get_cosine(vec1, vec2):
      intersection = set(vec1.keys()) & set(vec2.keys())
      numerator = sum([vec1[x] * vec2[x] for x in intersection])
@@ -171,15 +170,12 @@ def text_to_vector(text):
      words = WORD.findall(text)
      return Counter(words)
 
-#import enchant
-
 def calculate_similarity(str1,str2):
     vector1 = text_to_vector(str1)
     vector2 = text_to_vector(str2)
     return get_cosine(vector1, vector2)
 
 def remove_stopwords(text):
-   # text = 'hello bye the the hi'
     return ' '.join([word for word in text.split() if word not in cachedStopWords])
 
 
@@ -189,13 +185,9 @@ def fmean_squared_error(ground_truth, predictions):
 
 RMSE  = make_scorer(fmean_squared_error, greater_is_better=False)
 
-df_all = pd.concat((df_train, df_test), axis=0, ignore_index=True)
-df_all = pd.merge(df_all, df_pro_desc, how='left', on='product_uid')
-df_all = pd.merge(df_all, df_brand, how='left', on='product_uid')
 df_all['search_term'] = df_all['search_term'].map(lambda x:str_stem(x))
 df_all['product_title'] = df_all['product_title'].map(lambda x:str_stem(x))
 df_all['product_description'] = df_all['product_description'].map(lambda x:str_stem(x))
-
 df_all['brand'] = df_all['brand'].map(lambda x:str_stem(x))
 df_all['len_of_query'] = df_all['search_term'].map(lambda x:len(x.split())).astype(np.int64)
 df_all['len_of_title'] = df_all['product_title'].map(lambda x:len(x.split())).astype(np.int64)
