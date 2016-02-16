@@ -5,19 +5,20 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import pipeline, grid_search
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import FeatureUnion
+from sklearn.decomposition import TruncatedSVD
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import mean_squared_error, make_scorer
 from nltk.stem.porter import *
 stemmer = PorterStemmer()
 import re
 import random
+random.seed(1337)
 from nltk.corpus import stopwords
 import random
 import re, math
 from collections import Counter
-
-random.seed(2016)
 
 df_train = pd.read_csv('../input/train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('../input/test.csv', encoding="ISO-8859-1")
