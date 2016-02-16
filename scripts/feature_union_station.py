@@ -33,51 +33,30 @@ df_all = pd.merge(df_all, df_brand, how='left', on='product_uid')
 def str_stem(s):
     if isinstance(s, str):
         s = s.lower()
-        s = s.replace("-"," ") # character
-        s = s.replace(":"," ") # character
-        s = s.replace(";"," ") # character
-        s = s.replace("'' ","in.") # character
-        s = s.replace("inches","in.") # whole word
-        s = s.replace("inch","in.") # whole word
-        s = s.replace(" in ","in. ") # no period
-        s = s.replace(" in.","in.") # prefix space
+        s = s.replace("''","in.")
+        s = s.replace("inches","in.")
+        s = s.replace("inch","in.")
+        s = s.replace(" in ","in. ")
+        s = s.replace(" in.","in.")
 
-        s = s.replace("' ","ft.") # character
-        s = s.replace(" feet ","ft. ") # whole word
-        s = s.replace(" foot ","ft. ") # whole word
-        s = s.replace("feet","ft.") # whole word
-        s = s.replace("foot","ft.") # whole word
-        s = s.replace(" ft ","ft. ") # no period
-        s = s.replace(" ft.","ft.") # prefix space
+        s = s.replace("'","ft.")
+        s = s.replace(" feet ","ft. ")
+        s = s.replace("feet","ft.")
+        s = s.replace("foot","ft.")
+        s = s.replace(" ft ","ft. ")
+        s = s.replace(" ft.","ft.")
 
-        s = s.replace(" ounces ","oz. ") # whole word
-        s = s.replace(" ounce ","oz. ") # whole word
-        s = s.replace("ounce","oz.") # whole word
-        s = s.replace(" oz ","oz. ") # no period
-        s = s.replace(" oz.","oz.") # prefix space
-
-        s = s.replace(" centimeters","cm.")
-        s = s.replace("cm ","cm. ") # no period
-        s = s.replace(" cm ","cm. ") # no period
-        s = s.replace(" cm.","cm.") # prefix space
-
-        s = s.replace(" millimeters","mm.")
-        s = s.replace("mm ","mm. ") # no period
-        s = s.replace(" mm ","mm. ") # no period
-        s = s.replace(" mm.","mm.") # prefix space
-
-        s = s.replace(" pounds ","lb. ") # character
-        s = s.replace(" pound ","lb. ") # whole word
-        s = s.replace("pound","lb.") # whole word
-        s = s.replace("pounds","lb.") # whole word
-        s = s.replace(" lb ","lb. ") # no period
-        s = s.replace(" lbs ","lb. ")
-        s = s.replace(" lbs. ","lb. ")
-        s = s.replace("lbs.","lb.")
+        s = s.replace(" pounds ","lb. ")
+        s = s.replace(" pound ","lb. ")
+        s = s.replace("pound","lb.")
+        s = s.replace(" lb ","lb. ")
         s = s.replace(" lb.","lb.")
+        s = s.replace(" lbs ","lb. ")
+        s = s.replace("lbs.","lb.")
 
+        s = s.replace(" x "," xby ")
         s = s.replace("*"," xby ")
-        s = s.replace(" by"," xby")
+        s = s.replace(" by "," xby")
         s = s.replace("x0"," xby 0")
         s = s.replace("x1"," xby 1")
         s = s.replace("x2"," xby 2")
@@ -107,48 +86,48 @@ def str_stem(s):
         s = s.replace("sq ft.","sq.ft. ")
         s = s.replace("sq feet","sq.ft. ")
         s = s.replace("square feet","sq.ft. ")
-        s = s.replace(" sq.ft.","sq.ft.")
 
-        s = s.replace(" gallons ","gal. ") # character
-        s = s.replace(" gallon ","gal. ") # whole word
-        s = s.replace("gallons","gal.") # character
-        s = s.replace("gallon","gal.") # whole word
-        s = s.replace(" gal ","gal. ") # character
-        s = s.replace(" gal","gal.") # whole word
-        s = s.replace(" gal.","gal.")
+        s = s.replace(" gallons ","gal. ")
+        s = s.replace(" gallon ","gal. ")
+        s = s.replace("gallons","gal.")
+        s = s.replace("gallon","gal.")
+        s = s.replace(" gal ","gal. ")
+        s = s.replace(" gal","gal.")
 
-        s = s.replace("°","deg.")
-        s = s.replace(" degrees ","deg. ")
-        s = s.replace("degrees","deg.")
-        s = s.replace(" degree ","deg. ")
-        s = s.replace(" degree","deg.")
-        s = s.replace(" .deg","deg.")
+        s = s.replace("ounces","oz.")
+        s = s.replace("ounce","oz.")
+        s = s.replace(" oz.","oz. ")
+        s = s.replace(" oz ","oz. ")
 
-        s = s.replace(" volts","volt.")
-        s = s.replace("volts","volt.")
-        s = s.replace(" volt","volt.")
-        s = s.replace("volt","volt.")
-        s = s.replace(" volt.","volt.")
+        s = s.replace("centimeters","cm.")
+        s = s.replace(" cm.","cm.")
+        s = s.replace(" cm ","cm. ")
 
-        s = s.replace(" watts ","watt. ")
-        s = s.replace(" watts","watt.")
-        s = s.replace(" watt ","watt. ")
-        s = s.replace("watt","watt.")
-        s = s.replace(" watt.","watt.")
+        s = s.replace("milimeters","mm.")
+        s = s.replace(" mm.","mm.")
+        s = s.replace(" mm ","mm. ")
 
-        s = s.replace(" ampère ","amp. ")
-        s = s.replace("ampère","amp ")
-        s = s.replace(" amps ","amp.")
-        s = s.replace("amps ","amp.")
-        s = s.replace(" amp ","amp.")
-        s = s.replace(" amp.","amp.")
+        s = s.replace("°","deg. ")
+        s = s.replace("degrees","deg. ")
+        s = s.replace("degree","deg. ")
+
+        s = s.replace("volts","volt. ")
+        s = s.replace("volt","volt. ")
+
+        s = s.replace("watts","watt. ")
+        s = s.replace("watt","watt. ")
+
+        s = s.replace("ampere","amp. ")
+        s = s.replace("amps","amp. ")
+        s = s.replace(" amp ","amp. ")
 
         s = s.replace("whirpool","whirlpool")
         s = s.replace("whirlpoolga", "whirlpool")
         s = s.replace("whirlpoolstainless","whirlpool stainless")
 
-        s = (" ").join([stemmer.stem(z) for z in s.split(" ")])
+        s = s.replace("  "," ")
 
+        s = (" ").join([stemmer.stem(z) for z in s.split(" ")])
         return s.lower()
     else:
         return "null"
