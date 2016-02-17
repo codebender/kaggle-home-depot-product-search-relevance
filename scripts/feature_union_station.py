@@ -178,6 +178,21 @@ def calculate_similarity(str1,str2):
 def remove_stopwords(text):
     return ' '.join([word for word in text.split() if word not in cachedStopWords])
 
+class cust_regression_vals(BaseEstimator, TransformerMixin):
+    def fit(self, x, y=None):
+        return self
+    def transform(self, hd_searches):
+        d_col_drops=['id','relevance','search_term','product_title','product_description','product_info','attr','brand']
+        hd_searches = hd_searches.drop(d_col_drops,axis=1).values
+        return hd_searches
+
+class cust_txt_col(BaseEstimator, TransformerMixin):
+    def __init__(self, key):
+        self.key = key
+    def fit(self, x, y=None):
+        return self
+    def transform(self, data_dict):
+        return data_dict[self.key].apply(str)
 
 def fmean_squared_error(ground_truth, predictions):
     fmean_squared_error_ = mean_squared_error(ground_truth, predictions)**0.1
@@ -215,26 +230,47 @@ df_all['search_term_feature'] = df_all['search_term'].map(lambda x:len(x))
 df_all['similarity_in_description']=df_all['product_info'].map(lambda x:calculate_similarity(x.split('\t')[0],x.split('\t')[2]))
 df_all['similarity_in_title']=df_all['product_info'].map(lambda x:calculate_similarity(x.split('\t')[0],x.split('\t')[1]))
 
-df_all = df_all.drop(['search_term','product_title','product_description','product_info','attr','brand'],axis=1)
 df_all.head()
 print (df_all[:10])
 print("--- Features Set: %s minutes ---" % ((time.time() - start_time)/60))
-
+#df_all.to_csv('df_all.csv')
+#df_all = pd.read_csv('df_all.csv', encoding="ISO-8859-1", index_col=0)
 df_train = df_all.iloc[:num_train]
 df_test = df_all.iloc[num_train:]
 id_test = df_test['id']
 y_train = df_train['relevance'].values
-X_train = df_train.drop(['id','relevance'],axis=1).values
-X_test = df_test.drop(['id','relevance'],axis=1).values
+X_train =df_train[:]
+X_test = df_test[:]
+print("--- Features Set: %s minutes ---" % round(((time.time() - start_time)/60),2))
 
-rfr = RandomForestRegressor()
-clf = pipeline.Pipeline([('rfr', rfr)])
-param_grid = {'rfr__n_estimators' : [120,125,130],
-              'rfr__max_depth': list(range(14,17)),
-              'rfr__max_features' : [.4,.45]
-            }
+rfr = RandomForestRegressor(n_estimators = 197, random_state = 1337, verbose = 1)
+tfidf = TfidfVectorizer(ngram_range=(1, 1), stop_words='english')
+tsvd = TruncatedSVD(n_components=25, random_state = 1337)
+clf = pipeline.Pipeline([
+        ('union', FeatureUnion(
+                    transformer_list = [
+                        ('cst',  cust_regression_vals()),
+                        ('txt1', pipeline.Pipeline([('s1', cust_txt_col(key='search_term')), ('tfidf1', tfidf), ('tsvd1', tsvd)])),
+                        ('txt2', pipeline.Pipeline([('s2', cust_txt_col(key='product_title')), ('tfidf2', tfidf), ('tsvd2', tsvd)])),
+                        ('txt3', pipeline.Pipeline([('s3', cust_txt_col(key='product_description')), ('tfidf3', tfidf), ('tsvd3', tsvd)])),
+                        ('txt4', pipeline.Pipeline([('s4', cust_txt_col(key='brand')), ('tfidf4', tfidf), ('tsvd4', tsvd)]))
+                        ],
+                    transformer_weights = {
+                        'cst': 1.0,
+                        'txt1': 0.5,
+                        'txt2': 0.25,
+                        'txt3': 0.0,
+                        'txt4': 0.5
+                        }
+                )),
+        ('rfr', rfr)])
+param_grid = {
+                'rfr__n_estimators' : [120,125,130],
+                'rfr__max_depth': list(range(18, 23, 2)),
+                'rfr__max_features' : [.4,.45]
+             }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
-    n_jobs = -1, cv = 10, verbose = 150, scoring=RMSE)
+    cv = 10, verbose = 150, scoring=RMSE)
 model.fit(X_train, y_train)
 
 print("Best parameters found by grid search:")
@@ -244,5 +280,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/new_features_2.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/feature_union_station_2.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
