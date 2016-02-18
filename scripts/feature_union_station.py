@@ -33,26 +33,9 @@ df_all = pd.merge(df_all, df_brand, how='left', on='product_uid')
 def str_stem(s):
     if isinstance(s, str):
         s = s.lower()
-        s = s.replace("''","in.")
-        s = s.replace("inches","in.")
-        s = s.replace("inch","in.")
-        s = s.replace(" in ","in. ")
-        s = s.replace(" in.","in.")
-
-        s = s.replace("'","ft.")
-        s = s.replace(" feet ","ft. ")
-        s = s.replace("feet","ft.")
-        s = s.replace("foot","ft.")
-        s = s.replace(" ft ","ft. ")
-        s = s.replace(" ft.","ft.")
-
-        s = s.replace(" pounds ","lb. ")
-        s = s.replace(" pound ","lb. ")
-        s = s.replace("pound","lb.")
-        s = s.replace(" lb ","lb. ")
-        s = s.replace(" lb.","lb.")
-        s = s.replace(" lbs ","lb. ")
-        s = s.replace("lbs.","lb.")
+        s = s.replace("-"," ") # character
+        s = s.replace(":"," ") # character
+        s = s.replace(";"," ") # character
 
         s = s.replace(" x "," xby ")
         s = s.replace("*"," xby ")
@@ -78,48 +61,29 @@ def str_stem(s):
         s = s.replace("8x","8 xby ")
         s = s.replace("9x","9 xby ")
 
-        s = s.replace(" sq ft","sq.ft. ")
-        s = s.replace("sq ft","sq.ft. ")
-        s = s.replace("sqft","sq.ft. ")
-        s = s.replace(" sqft ","sq.ft. ")
-        s = s.replace("sq. ft","sq.ft. ")
-        s = s.replace("sq ft.","sq.ft. ")
-        s = s.replace("sq feet","sq.ft. ")
-        s = s.replace("square feet","sq.ft. ")
+        s = re.sub(r"([0-9]+)( *)(inches|inch|in|'')\.?", r"\1in. ", s)
 
-        s = s.replace(" gallons ","gal. ")
-        s = s.replace(" gallon ","gal. ")
-        s = s.replace("gallons","gal.")
-        s = s.replace("gallon","gal.")
-        s = s.replace(" gal ","gal. ")
-        s = s.replace(" gal","gal.")
+        s = re.sub(r"([0-9]+)( *)(foot|feet|ft|')\.?", r"\1ft. ", s)
 
-        s = s.replace("ounces","oz.")
-        s = s.replace("ounce","oz.")
-        s = s.replace(" oz.","oz. ")
-        s = s.replace(" oz ","oz. ")
+        s = re.sub(r"([0-9]+)( *)(pounds|pound|lbs|lb)\.?", r"\1lb. ", s)
 
-        s = s.replace("centimeters","cm.")
-        s = s.replace(" cm.","cm.")
-        s = s.replace(" cm ","cm. ")
+        s = re.sub(r"([0-9]+)( *)(square|sq) ?\.?(feet|foot|ft)\.?", r"\1sq.ft. ", s)
 
-        s = s.replace("milimeters","mm.")
-        s = s.replace(" mm.","mm.")
-        s = s.replace(" mm ","mm. ")
+        s = re.sub(r"([0-9]+)( *)(gallons|gallon|gal)\.?", r"\1gal. ", s)
 
-        s = s.replace("°","deg. ")
-        s = s.replace("degrees","deg. ")
-        s = s.replace("degree","deg. ")
+        s = re.sub(r"([0-9]+)( *)(ounces|ounce|oz)\.?", r"\1oz. ", s)
 
-        s = s.replace("volts","volt. ")
-        s = s.replace("volt","volt. ")
+        s = re.sub(r"([0-9]+)( *)(centimeters|cm)\.?", r"\1cm. ", s)
 
-        s = s.replace("watts","watt. ")
-        s = s.replace("watt","watt. ")
+        s = re.sub(r"([0-9]+)( *)(milimeters|mm)\.?", r"\1mm. ", s)
 
-        s = s.replace("ampere","amp. ")
-        s = s.replace("amps","amp. ")
-        s = s.replace(" amp ","amp. ")
+        s = re.sub(r"([0-9]+)( *)(degrees|degree|degs|deg|°)\.?", r"\1deg. ", s)
+
+        s = re.sub(r"([0-9]+)( *)(volts|volt)\.?", r"\1volt. ", s)
+
+        s = re.sub(r"([0-9]+)( *)(watts|watt)\.?", r"\1watt. ", s)
+
+        s = re.sub(r"([0-9]+)( *)(amperes|ampere|amps|amp)\.?", r"\1amp. ", s)
 
         s = s.replace("whirpool","whirlpool")
         s = s.replace("whirlpoolga", "whirlpool")
