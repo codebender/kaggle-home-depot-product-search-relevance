@@ -14,7 +14,7 @@ from nltk.stem.snowball import SnowballStemmer #0.003 improvement but takes twic
 stemmer = SnowballStemmer('english')
 import re
 import random
-random.seed(1337)
+random.seed(21337)
 from nltk.corpus import stopwords
 import random
 import re, math
@@ -159,7 +159,7 @@ class cust_txt_col(BaseEstimator, TransformerMixin):
         return data_dict[self.key].apply(str)
 
 def fmean_squared_error(ground_truth, predictions):
-    fmean_squared_error_ = mean_squared_error(ground_truth, predictions)**0.1
+    fmean_squared_error_ = mean_squared_error(ground_truth, predictions)**0.5
     return fmean_squared_error_
 
 RMSE  = make_scorer(fmean_squared_error, greater_is_better=False)
@@ -207,9 +207,9 @@ X_train =df_train[:]
 X_test = df_test[:]
 print("--- Features Set: %s minutes ---" % round(((time.time() - start_time)/60),2))
 
-rfr = RandomForestRegressor(n_estimators = 197, random_state = 1337, verbose = 1)
+rfr = RandomForestRegressor(n_estimators = 150, random_state = 21337, verbose = 1)
 tfidf = TfidfVectorizer(ngram_range=(1, 1), stop_words='english')
-tsvd = TruncatedSVD(n_components=25, random_state = 1337)
+tsvd = TruncatedSVD(n_components=25, random_state = 21337)
 clf = pipeline.Pipeline([
         ('union', FeatureUnion(
                     transformer_list = [
@@ -229,12 +229,12 @@ clf = pipeline.Pipeline([
                 )),
         ('rfr', rfr)])
 param_grid = {
-                'rfr__n_estimators' : [120,125,130],
-                'rfr__max_depth': list(range(18, 23, 2)),
-                'rfr__max_features' : [.4,.45]
+                'rfr__n_estimators' : [125],
+                'rfr__max_depth': [23],
+                'rfr__max_features' : [11,12]
              }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
-    cv = 10, verbose = 150, scoring=RMSE)
+    cv = 10, verbose = 250, scoring=RMSE)
 model.fit(X_train, y_train)
 
 print("Best parameters found by grid search:")
@@ -244,5 +244,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/feature_union_station_2.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/union_station_1.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
