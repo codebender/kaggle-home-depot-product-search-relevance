@@ -10,8 +10,8 @@ from sklearn.pipeline import FeatureUnion
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import mean_squared_error, make_scorer
-from nltk.stem.porter import *
-stemmer = PorterStemmer()
+from nltk.stem.snowball import SnowballStemmer #0.003 improvement but takes twice as long as PorterStemmer
+stemmer = SnowballStemmer('english')
 import re
 import random
 random.seed(1337)
