@@ -35,13 +35,13 @@ strNum = {'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7
 
 def str_stem(s):
     if isinstance(s, str):
-        s = re.sub(r"(\w)\.([A-Z])", r"\1 \2", s) #Split words with a.A
         s = s.lower()
+        s = re.sub(r"(\w)\.([a-z])", r"\1 \2", s)
         s = s.replace("-"," ")
         s = s.replace(":"," ")
         s = s.replace(";"," ")
         s = s.replace("  "," ")
-        s = s.replace(",","") #could be number / segment later
+        s = s.replace(", "," ")
         s = s.replace("$"," ")
         s = s.replace("?"," ")
         s = s.replace("-"," ")
@@ -57,7 +57,7 @@ def str_stem(s):
         # slit dimentions
         s = s.replace(" x "," xby ")
         s = s.replace("*"," xby ")
-        s = s.replace(" by "," xby")
+        s = s.replace(" by "," xby ")
         s = s.replace("x0"," xby 0")
         s = s.replace("x1"," xby 1")
         s = s.replace("x2"," xby 2")
@@ -87,16 +87,24 @@ def str_stem(s):
         s = re.sub(r"([0-9]+)( *)(cubic|cu) ?\.?(feet|foot|ft)\.?", r"\1cu.ft. ", s)
         s = re.sub(r"([0-9]+)( *)(gallons|gallon|gal)\.?", r"\1gal. ", s)
         s = re.sub(r"([0-9]+)( *)(ounces|ounce|oz)\.?", r"\1oz. ", s)
-        s = re.sub(r"([0-9]+)( *)(centimeters|cm)\.?", r"\1cm. ", s)
-        s = re.sub(r"([0-9]+)( *)(milimeters|mm)\.?", r"\1mm. ", s)
+        s = re.sub(r"([0-9]+)( *)(centimeters|centimeter|cm)\.?", r"\1cm. ", s)
+        s = re.sub(r"([0-9]+)( *)(milimeters|millimeters|millimeter|mm)\.?", r"\1mm. ", s)
         s = re.sub(r"([0-9]+)( *)(degrees|degree|degs|deg)\.?", r"\1deg. ", s)
         s = re.sub(r"([0-9]+)( *)(volts|volt)\.?", r"\1volt. ", s)
         s = re.sub(r"([0-9]+)( *)(watts|watt)\.?", r"\1watt. ", s)
-        s = re.sub(r"([0-9]+)( *)(amperes|ampere|amps|amp)\.?", r"\1amp. ", s)
+        s = re.sub(r"([0-9]+)( *)(amperes|ampere|ampère|amps|amp)\.?", r"\1amp. ", s)
+
+        s = s.replace(" . "," ")
+        s = s.replace("  "," ")
+        s = (" ").join([str(strNum[z]) if z in strNum else z for z in s.split(" ")])
+        s = (" ").join([stemmer.stem(z) for z in s.split(" ")])
 
         # Spelling Mistakes
+        s = s.lower()
         s = s.replace("toliet","toilet")
         s = s.replace("airconditioner","air conditioner")
+        s = s.replace("aircondition","air conditioner")
+        s = s.replace("condtion","condition")
         s = s.replace("vinal","vinyl")
         s = s.replace("vynal","vinyl")
         s = s.replace("skill","skil")
@@ -107,11 +115,7 @@ def str_stem(s):
         s = s.replace("whirlpoolga", "whirlpool")
         s = s.replace("whirlpoolstainless","whirlpool stainless")
 
-        s = s.replace("  "," ")
-
-        s = (" ").join([str(strNum[z]) if z in strNum else z for z in s.split(" ")])
-        s = (" ").join([stemmer.stem(z) for z in s.split(" ")])
-        return s.lower()
+        return s
     else:
         return "null"
 
@@ -301,5 +305,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/union_station_4.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/union_station_7.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
