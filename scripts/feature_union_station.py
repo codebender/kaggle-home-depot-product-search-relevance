@@ -38,7 +38,7 @@ def str_stem(s):
         s = re.sub(r"(\w)\.([A-Z])", r"\1 \2", s) #Split words with a.A
         s = s.lower()
         s = s.replace("  "," ")
-        s = s.replace(",","") #could be number / segment later
+        s = s.replace(", ","") #could be number / segment later
         s = s.replace("$"," ")
         s = s.replace("?"," ")
         s = s.replace("-"," ")
@@ -283,5 +283,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/union_station_10.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/union_station_11.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
