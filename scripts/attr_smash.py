@@ -14,7 +14,7 @@ from nltk.stem.snowball import SnowballStemmer #0.003 improvement but takes twic
 stemmer = SnowballStemmer('english')
 import re
 import random
-random.seed(21337)
+random.seed(31337)
 from nltk.corpus import stopwords
 import random
 import re, math
@@ -96,8 +96,6 @@ def str_stem(s):
         s = re.sub(r"([0-9]+)( *)(amperes|ampere|amps|amp)\.?", r"\1amp. ", s)
         s = s.replace("  "," ")
         s = s.replace(" . "," ")
-        s = s.replace("..",".")
-        #s = (" ").join([z for z in s.split(" ") if z not in stop_w])
         s = (" ").join([str(strNum[z]) if z in strNum else z for z in s.split(" ")])
         s = (" ").join([stemmer.stem(z) for z in s.split(" ")])
 
@@ -204,9 +202,8 @@ class cust_regression_vals(BaseEstimator, TransformerMixin):
     def transform(self, hd_searches):
         d_col_drops=['id','relevance','search_term','product_title',
             'product_description','product_info','attr','brand','bullets',
-            'bullet1','bullet2','bullet3','bullet4','len_of_bullet1',
-            'len_of_bullet2','len_of_bullet3','len_of_bullet4','len_of_brand',
-            'len_of_description','len_of_title','len_of_query']
+            'bullet1','bullet2','bullet3','bullet4', 'len_of_bullet1',
+            'len_of_bullet2', 'len_of_bullet3', 'len_of_bullet4']
         hd_searches = hd_searches.drop(d_col_drops,axis=1).values
         return hd_searches
 
@@ -291,31 +288,23 @@ X_train =df_train[:]
 X_test = df_test[:]
 print("--- Features Set: %s minutes ---" % round(((time.time() - start_time)/60),2))
 
-rfr = RandomForestRegressor(n_estimators = 150, random_state = 21337, verbose = 1)
+rfr = RandomForestRegressor(n_estimators = 500, random_state = 31337, verbose = 1)
 tfidf = TfidfVectorizer(ngram_range=(1, 1), stop_words='english')
-tsvd = TruncatedSVD(n_components=15, random_state = 21337)
+tsvd = TruncatedSVD(n_components=15, random_state = 31337)
 clf = pipeline.Pipeline([
         ('union', FeatureUnion(
                     transformer_list = [
                         ('cst',  cust_regression_vals()),
                         ('txt1', pipeline.Pipeline([('s1', cust_txt_col(key='search_term')), ('tfidf1', tfidf), ('tsvd1', tsvd)])),
                         ('txt2', pipeline.Pipeline([('s2', cust_txt_col(key='product_title')), ('tfidf2', tfidf), ('tsvd2', tsvd)])),
-                        ('txt3', pipeline.Pipeline([('s3', cust_txt_col(key='product_description')), ('tfidf3', tfidf), ('tsvd3', tsvd)])),
                         ('txt4', pipeline.Pipeline([('s4', cust_txt_col(key='brand')), ('tfidf4', tfidf), ('tsvd4', tsvd)]))
-                        ],
-                    transformer_weights = {
-                        'cst': 1.0,
-                        'txt1': 0.5,
-                        'txt2': 0.25,
-                        'txt3': 0.0,
-                        'txt4': 0.5
-                        }
+                        ]
                 )),
         ('rfr', rfr)])
 param_grid = {
-                'rfr__n_estimators' : [127],
-                'rfr__max_depth': [24,25],
-                'rfr__max_features' : [15,16]
+                'rfr__n_estimators' : [125],
+                'rfr__max_depth': [22,23,24],
+                'rfr__max_features' : [16,17,18]
              }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
     cv = 10, verbose = 250, scoring=RMSE)
@@ -328,5 +317,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/attr_smash_4.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/attr_smash_7.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
