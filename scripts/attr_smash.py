@@ -71,23 +71,11 @@ def str_stem(s):
         s = re.sub(r"([0-9]+)( *)(foot|feet|ft|')\.?", r"\1ft. ", s)
         s = re.sub(r"([0-9]+)( *)(pounds|pound|lbs|lb)\.?", r"\1lb. ", s)
         s = re.sub(r"([0-9]+)( *)(square|sq) ?\.?(feet|foot|ft)\.?", r"\1sq.ft. ", s)
-        s = re.sub(r"([0-9]+)( *)(square|sq) ?\.?(inches|inch|in|'')\.?", r"\1sq.in. ", s)
-        s = re.sub(r"([0-9]+)( *)(square|sq) ?\.?(millimeters|milimeters|mm)\.?", r"\1sq.mm. ", s)
-        s = re.sub(r"([0-9]+)( *)(square|sq) ?\.?(centimeters|cm)\.?", r"\1sq.cm. ", s)
-        s = re.sub(r"([0-9]+)( *)(square|sq) ?\.?(meters|meter|,)\.?", r"\1sq.m. ", s)
         s = re.sub(r"([0-9]+)( *)(cubic|cu) ?\.?(feet|foot|ft)\.?", r"\1cu.ft. ", s)
-        s = re.sub(r"([0-9]+)( *)(cubic|cu) ?\.?(inches|inch|in|'')\.?", r"\1cu.in. ", s)
-        s = re.sub(r"([0-9]+)( *)(cubic|cu) ?\.?(millimeters|milimeters|mm)\.?", r"\1cu.mm. ", s)
-        s = re.sub(r"([0-9]+)( *)(cubic|cu) ?\.?(centimeters|cm)\.?", r"\1cu.cm. ", s)
-        s = re.sub(r"([0-9]+)( *)(cubic|cu) ?\.?(meters|meter|m)\.?", r"\1cu.m. ", s)
         s = re.sub(r"([0-9]+)( *)(gallons|gallon|gals|gal)\.?", r"\1gal. ", s)
-        s = re.sub(r"([0-9]+)( *)(liters|liter|l)\.?", r"\1l. ", s)
         s = re.sub(r"([0-9]+)( *)(ounces|ounce|oz)\.?", r"\1oz. ", s)
-        s = re.sub(r"([0-9]+)( *)(gram|grams|gm|g)\.?", r"\1gm. ", s)
-        s = re.sub(r"([0-9]+)( *)(kilograms|kilogram|kg)\.?", r"\1kg. ", s)
         s = re.sub(r"([0-9]+)( *)(centimeters|cm)\.?", r"\1cm. ", s)
         s = re.sub(r"([0-9]+)( *)(millimeters|milimeters|mm)\.?", r"\1mm. ", s)
-        s = re.sub(r"([0-9]+)( *)(meters|meter|m)\.?", r"\1m. ", s)
         s = s.replace("°"," degrees ")
         s = re.sub(r"([0-9]+)( *)(degrees|degree)\.?", r"\1deg. ", s)
         s = s.replace(" v "," volts ")
@@ -302,9 +290,9 @@ clf = pipeline.Pipeline([
                 )),
         ('rfr', rfr)])
 param_grid = {
-                'rfr__n_estimators' : [125],
-                'rfr__max_depth': [22,23,24],
-                'rfr__max_features' : [16,17,18]
+                'rfr__n_estimators' : [123,125,127],
+                'rfr__max_depth': [24],
+                'rfr__max_features' : [17]
              }
 model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid,
     cv = 10, verbose = 250, scoring=RMSE)
@@ -317,5 +305,5 @@ print(model.best_score_)
 
 y_pred = model.predict(X_test)
 print(len(y_pred))
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/attr_smash_7.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('../submissions/attr_smash_9.csv',index=False)
 print("--- Training & Testing: %s minutes ---" % ((time.time() - start_time)/60))
